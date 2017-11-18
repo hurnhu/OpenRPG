@@ -21,9 +21,13 @@ build_cpp(){
             popd
         else
             echo "MAKE NOT INSTALLED, ABORTING..."
+    	    
+            STATUS=-1;
         fi
     else
         echo "CMAKE NOT INSTALLED, ABORTING..."
+	
+	STATUS=-1;
     fi
 }
 
@@ -47,23 +51,42 @@ built_api(){
 if [[ $OSTYPE == "linux"* || $OSTYPE == "darwin"*  ||  $OSTYPE == "cygwin" ]] && [[ $# -eq 0 ]]; then
     build_cpp
 elif [[ "$1" == "api" ]]; then
+
     echo "BUILDING CPP SOURCE..."
+
+    STATUS=1;
+
     build_cpp
-    echo "FINISHED.... MOVING FILES..."
-    mkdir $cwd/api/build/
-    cp $cwd/build/{character-generator,name-generator,roll,openrpg} $cwd/api/build/ 
-    echo "FINISHED.... BUILDING API..."
-    built_api
+    if [[ $STATUS > 0  ]]; then
+        echo "FINISHED.... MOVING FILES..."
+        if [ ! -d "$cwd/build" ]; then
+            mkdir $cwd/api/build/
+        fi
+        cp $cwd/build/{character-generator,name-generator,roll,openrpg} $cwd/api/build/ 
+
+        echo "FINISHED.... BUILDING API..."
+
+        built_api
+    else
+        echo "THERE WAS AN ERROR BUILDING CPP SOURCES..."
+    fi
 elif [[ "$1" == "clean-api" ]]; then
     if [ -d "$cwd/api/build/" ]; then
+
       echo "REMOVING API/BUILD"  
+
       rm -r "$cwd/api/build/"
     fi
+
     pushd $cwd/api/
+
     echo "CLEANING API DIR"
+
     cargo clean
+
     echo "API CLEAN... FINISHED"
+
     popd
 else
-    echo "UNSUPORTED PLATFORM $OSTYPE"
+    echo "UNSUPORTED PLATFORM $OSTYPE OR INVALID ARGUMENT"
 fi
